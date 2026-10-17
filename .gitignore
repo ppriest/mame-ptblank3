@@ -1,0 +1,5 @@
+# decrypt-stream dumps contain the game's program (plaintext) and NAND ciphertext: ROM-derived, not for GitHub
+data/*.bin
+data/*.log
+__pycache__/
+*.exe

@@ -1,0 +1,52 @@
+diff --git a/src/mame/namco/ns10crypt.cpp b/src/mame/namco/ns10crypt.cpp
+index 33eaa3fc22a..39a6bbb5b1f 100644
+--- a/src/mame/namco/ns10crypt.cpp
++++ b/src/mame/namco/ns10crypt.cpp
+@@ -119,6 +119,23 @@ really exist.
+ #include "ns10crypt.h"
+ 
+ #include <utility>
++#include <cstdio>
++#include <cstdlib>
++
++// TEMP instrumentation: dump decrypt stream when NS10_DUMP names a file
++static FILE *ns10_dump_file()
++{
++	static FILE *f = nullptr;
++	static bool tried = false;
++	if (!tried) { tried = true; const char *n = std::getenv("NS10_DUMP"); if (n) f = std::fopen(n, "wb"); }
++	return f;
++}
++static void ns10_dump(char type, uint8_t b, uint16_t c, uint16_t p, uint32_t cnt)
++{
++	FILE *f = ns10_dump_file(); if (!f) return;
++	uint8_t r[10] = { uint8_t(type), b, uint8_t(c), uint8_t(c >> 8), uint8_t(p), uint8_t(p >> 8), uint8_t(cnt), uint8_t(cnt >> 8), uint8_t(cnt >> 16), uint8_t(cnt >> 24) };
++	std::fwrite(r, 1, 10, f); std::fflush(f);
++}
+ 
+ 
+ DEFINE_DEVICE_TYPE(MRDRILR2_DECRYPTER, mrdrilr2_decrypter_device, "mrdrilr2_decrypter", "Mr Driller 2 decrypter")
+@@ -151,6 +168,7 @@ void ns10_decrypter_device::activate(int iv)
+ 
+ void ns10_decrypter_device::deactivate()
+ {
++	ns10_dump('X', 0, 0, 0, 0);
+ 	m_active = false;
+ }
+ 
+@@ -329,6 +347,7 @@ uint16_t ns10_type2_decrypter_nonlinear_device::decrypt(uint16_t cipherword)
+ 	m_mask ^= m_logic.xMask;
+ 
+ 	uint8_t nonlinear_bit = BIT(m_nonlinear_region->base()[m_nonlinear_count / 8], 7 - (m_nonlinear_count % 8));
++	ns10_dump('D', nonlinear_bit, cipherword, plainword, m_nonlinear_count);
+ 	m_nonlinear_count++;
+ 	if (m_nonlinear_count >= m_nonlinear_region->bytes() * 8)
+ 		m_nonlinear_count = 0;
+@@ -339,6 +358,7 @@ uint16_t ns10_type2_decrypter_nonlinear_device::decrypt(uint16_t cipherword)
+ 
+ void ns10_type2_decrypter_nonlinear_device::init(int iv)
+ {
++	ns10_dump('I', uint8_t(iv), 0, 0, m_nonlinear_count);
+ 	if (m_logic.iv_calculation)
+ 		m_previous_cipherwords = m_logic.iv_calculation(iv);
+ 	else
