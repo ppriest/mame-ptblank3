@@ -78,3 +78,26 @@ MAME tree restored (patch saved here); E:/mame/namcos10.exe is the instrumented 
   make SUBTARGET=namcos10 SOURCES=namco/namcos10.cpp (needs OS=Windows_NT in the msys shell), run with NS10_DUMP=<file>
   and -nodebug (the user's mame.ini enables the debugger, which blocks headless runs).
 - Scripts expect to be run from scripts/ with ../data/ptblank3_dump.bin as argv[1] (some take ../mamerun/dump.bin: adjust).
+
+## Round 2 (residual e = t ^ L4' analysed against the whole stream)
+Ruled out, with held-out checks where a fit looked good:
+- Periodic keystream: no autocorrelation spikes at structural lags (256, 516, 2^k), no spectral line,
+  no forbidden triple coincidences (whole stream, lags <= 4096; within page, all lag pairs).
+- One-bit hidden register R (e = gate & R): R_i = A ^ R_{i-1}&B with A,B linear (lags 1..12, lag pairs)
+  or A quadratic in the 6-word state: held-out accuracy 0.72 vs 0.885 for predicting 0.
+- Cubic in a small vocabulary (mask bit 0 at depths 0..11, plaintext bits 11/14/15 at depths 2..10,
+  residual lags): looked near-exact (6 inconsistent of 7446) but is memorisation: 9074 distinct patterns
+  for rank ~9054, held-out accuracy 0.49.
+- Plaintext-selected multiplexer; per-value plaintext tables; carry and sum bits of every word pair
+  (+,-) and running sums of p, c, m: nothing beats the plain p[i-4].11 correlation.
+- Exact affine factor over 24 and 48 words of history: none.
+New facts:
+- An enable exists: if no plaintext word at depth 4..96 has any of bits 7,8,11,14,15 set, e = 0 (0 leaks).
+  Bit 11 at depth 4 is the strongest driver (e rate 0.34 vs 0.13). Bit 8 alone never enables.
+- e decays with words since the last enabling word: ~0.26 for 0..3, ~0.1 at 10, ~0.01 at 25, 0 beyond ~64.
+- Words with identical 24-word plaintext windows but different cipher agree on e only 81% (chance 71%):
+  e depends strongly on cipher/mask, yet no single cipher/mask bit or word carries information (hash-like).
+
+## Pitfall (important)
+GF(2) "inconsistent of free" counts are inflated by duplicate and trivial rows (zero-plaintext regions).
+A low count can be pure memorisation. Always score a candidate on held-out rows or held-out patterns.
