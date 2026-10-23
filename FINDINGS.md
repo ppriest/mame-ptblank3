@@ -143,3 +143,15 @@ No learner or closed-form family tried generalises past ~87% on enabled rows. Ei
 more state or mixing than any family tried, or it depends on something not in the word stream
 (e.g. CPLD timing/counter state sampled per read). Data from this one fixed program is unlikely to settle it;
 chosen-input experiments on a real board (reflashed NAND) or the original researchers' notes are the next step.
+
+## Round 3: is h a function of plaintext history?
+- No. Far-apart enabled rows with identical plaintext over the last W words (scripts/longwin.py):
+  among pairs where at least one row has an event, they disagree ~80% of the time for every W
+  (W = 8, 24, 48, 96, 160, 256). Overall agreement rises with W only because long repeats sit in quiet code.
+  So h depends on the cipher/mask side, not only on plaintext, even with 256 words of identical plaintext.
+- Aligned pairs (identical 24/48-word plaintext, >= 1 event): h_A ^ h_B is not Q(m_A) ^ Q(m_B) for a fixed
+  linear or quadratic Q over masks of 4-6 words + t lags + c[i+1] without bit 11 (scripts/pairQ.py; held-out 0.50-0.52).
+  Within such repeats the mask states span low rank (~42 for 6 words): the masks are fixed by the linear
+  recurrence from earlier state, so "mask dependence" is dependence on the state at earlier times.
+- Shift-register-of-latched-products family: h = XOR of p[d].b & m[d+off].k (same word or +-2 words, depths 4..20)
+  (scripts/samedepth.py): fails, 0.54-0.55 held-out on enabled rows (base 0.79).
