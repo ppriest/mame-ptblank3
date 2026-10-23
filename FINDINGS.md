@@ -101,3 +101,27 @@ New facts:
 ## Pitfall (important)
 GF(2) "inconsistent of free" counts are inflated by duplicate and trivial rows (zero-plaintext regions).
 A low count can be pure memorisation. Always score a candidate on held-out rows or held-out patterns.
+
+## Step 1: predictability upper bound (LightGBM, held-out = last 30% of the stream)
+Features per word: cipher, plain, mask bits over W words, next cipherword without bit 11; optionally
+table-bit, residual and gate lags. Target e on gate-open rows (scripts/gbm.py, gbm2.py).
+
+| rows        | W  | lags | held-out acc | base   | entropy explained |
+|-------------|----|------|--------------|--------|-------------------|
+| gate-open   | 8  | no   | 0.890        | 0.882  | 36%               |
+| gate-open   | 8  | yes  | 0.916        | 0.882  | 51%               |
+| gate-open   | 16 | yes  | 0.915        | 0.882  | 51%               |
+| gate-open   | 32 | yes  | 0.913        | 0.881  | 50%               |
+| enabled     | 8  | no   | 0.811        | 0.796  | 22%               |
+| enabled     | 16 | yes  | 0.855        | 0.796  | 41%               |
+
+"enabled" = some plaintext word at depth 4..96 has a bit in 0xc980. The plateau does not move with W.
+Caveat: trees cannot represent many-bit XOR, so this does not by itself prove hidden state.
+Complementary test (scripts/grouplin2.py): within groups of identical 8-, 16- or 24-word plaintext windows,
+e is not XOR-linear in mask bits of words i..i-5 plus t lags (held-out on novel mask states: 0.51 vs base 0.77).
+So fixing plaintext context does not reduce e to a parity of recent masks.
+
+## Pitfall: c[i+1] bit 11 leaks the target
+c[i+1].11 = p[i+1].11 ^ m[i+1].11 and m[i+1].11 contains t_i. In repeated code p[i+1] is predictable,
+so c[i+1].11 reveals t_i. Exclude it (a within-group fit scored 99% with it, 51% without).
+Earlier failing fits that included it remain valid failures; LightGBM numbers are unchanged without it.
