@@ -125,3 +125,21 @@ So fixing plaintext context does not reduce e to a parity of recent masks.
 c[i+1].11 = p[i+1].11 ^ m[i+1].11 and m[i+1].11 contains t_i. In repeated code p[i+1] is predictable,
 so c[i+1].11 reveals t_i. Exclude it (a within-group fit scored 99% with it, 51% without).
 Earlier failing fits that included it remain valid failures; LightGBM numbers are unchanged without it.
+
+## Step 2: hidden-register tests
+- Linear register fed by plaintext, any width, decaying to zero, output bilinear in register x recent words
+  (scripts/bilin.py: plaintext bits at depth d x cipher/plain bits of 3-4 words, exact GF(2), held-out on
+  the last 30%): fails. Bits {7,8,11,14,15} depths 4..24 x c of 4 words: held-out 0.57 on enabled rows
+  (base 0.80); all 16 bits depths 4..20 x c,p of 3 words: 0.54.
+- GRU, 2 layers x 128, one word per step (c, p, m bits, previous t and e, current gate), trained on the
+  first 70% (scripts/gru.py): best held-out 0.873 on enabled rows (base 0.796) at epoch 30, then overfits
+  (train loss 0.08, held-out falls). Slightly above trees (0.855), far from deterministic.
+- Other 15 plaintext and mask bits of the word being decrypted added to the trees (scripts/gbm3.py): no gain (0.855).
+- No z3 search was run: every tractable SAT state-machine formulation needs a small input alphabet, and
+  e depends on cipher/mask bits in a hash-like way, so any such alphabet discards the signal.
+
+## Where this leaves it
+No learner or closed-form family tried generalises past ~87% on enabled rows. Either the hidden logic has
+more state or mixing than any family tried, or it depends on something not in the word stream
+(e.g. CPLD timing/counter state sampled per read). Data from this one fixed program is unlikely to settle it;
+chosen-input experiments on a real board (reflashed NAND) or the original researchers' notes are the next step.
