@@ -216,3 +216,5 @@ pinned is SAT and predicts the next 20000 words exactly; real data with the same
   288896..289496; survivors are tested on the next 20000 words. Planted check (n = 4): the planted candidate and
   5 equivalent forms found, each 1.0000 on 15033 held-out gated words; 2^24 candidates in 25 s on one core.
   Real data, n = 4 (2^30 candidates, covers n <= 4): none fits; deepest reject at 123 of 448 gated words (64 unknowns).
+- Real data, n = 5 (2^35 candidates, covers n <= 5): none fits; deepest reject at 142 of 448 gated words (80 unknowns).
+  1 h 56 min on 20 processes (log timestamps).
