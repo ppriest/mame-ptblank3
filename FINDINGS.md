@@ -204,3 +204,10 @@ pinned is SAT and predicts the next 20000 words exactly; real data with the same
   candidate's wrong words, 8 per iteration. On planted instances (n = 4 and 6, 4 seeds each, 900 s) every run stalled
   at 72-80 of 448 constraints after 5-6 iterations with z3 unknown. The limit is the depth of the unrolled nonlinear
   register, not the constraint count: this template is beyond z3 at these sizes even when a solution exists.
+- CryptoMiniSat (scripts/cms_nlfsr.py; parities as native XOR clauses). Encoding check at n = 4 on 300 words: planted
+  data with all parameters pinned SAT in 0 s, next 20000 words predicted at 1.0000 (base 0.5316); real data, same pin,
+  UNSAT in 0 s. Unpinned planted instances: unknown after 900 s at n = 4 and 6 on 300 and 600 words.
+  Pinning groups of the planted parameters (n = 4, 300 words, 300 s): W alone, or a,b,c,l,d,f alone, SAT in 0 s;
+  a,c / b,c / l,d,f / l,d,f,b / l,d,f,b,c unknown; W columns 0..11 pinned SAT in 0 s, 0..7 or fewer unknown.
+  The hardness is the product of unknown state and unknown output masks: once either is fixed the rest is linear.
+  Splitting the search by pinning W needs about 48 bits at n = 4, too many to enumerate.
