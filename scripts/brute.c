@@ -2,11 +2,13 @@
    new bit = a.u ^ l.R ^ (d.R & f.R) ^ (b.R & c.u), u = p[i-4] bits in mask; output = XOR_k R[k] & W_k.m[i].
    For each (a, c, l, d, f, b, init) the register is simulated and the output is linear in W (n*16 unknowns):
    online GF(2) elimination rejects the candidate at the first inconsistent gated word.
-   Usage: brute in.bin n mask lo hi   (candidate indices lo..hi-1; layout a | c | l | d | f | b | init) */
+   Usage: brute in.bin n mask lo hi   (candidate indices lo..hi-1; layout a | c | l | d | f | b | init)
+   Prints a progress line every PROGRESS_S seconds (env, default 120). */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 typedef unsigned __int128 u128;
 #define PAR(v) (__builtin_popcount(v) & 1)
 
@@ -35,7 +37,16 @@ int main(int argc, char **argv) {
     u128 basis[128]; uint8_t brhs[128], have[128]; int used[128];
     memset(have, 0, sizeof have);
     uint64_t passes = 0; int best = 0; uint64_t bestidx = 0;
+    const char *ps = getenv("PROGRESS_S"); double pint = ps ? atof(ps) : 120;
+    time_t t0 = time(0), tlast = t0;
     for (uint64_t idx = lo; idx < hi; idx++) {
+        if (!(idx & 0xffff) && time(0) - tlast >= pint) {
+            tlast = time(0); double el = difftime(tlast, t0), fr = (double)(idx - lo) / (hi - lo);
+            printf("progress %llu..%llu: %.1f%% after %.0f s, %.2f us/candidate, ETA %.0f s, %llu fits, deepest reject %d\n",
+                   (unsigned long long)lo, (unsigned long long)hi, 100 * fr, el, el * 1e6 / (idx - lo),
+                   el * (1 - fr) / fr, (unsigned long long)passes, best);
+            fflush(stdout);
+        }
         uint64_t t = idx;
         unsigned a = t & NM; t >>= nm; unsigned c = t & NM; t >>= nm;
         unsigned l = t & NN; t >>= n; unsigned d = t & NN; t >>= n; unsigned f = t & NN; t >>= n;
