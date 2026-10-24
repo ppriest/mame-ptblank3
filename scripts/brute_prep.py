@@ -1,6 +1,6 @@
 """Per-word input for brute.c: segment S0..S0+T+H as records (u = p[i-4], x = m[i], e, gate), 6 bytes each.
 Args: dump S0 T H out [planted n mask seed]. Planted: e replaced by the template with a, c inside mask;
-prints the planted candidate index in brute.c's layout (a | c | l | d | f | b | init, low to high)."""
+env XSRC picks the output word (default m0 = m[i]); prints the planted candidate index in brute.c's layout (a | c | l | d | f | b | init, low to high)."""
 import sys, numpy as np
 from ns10 import load_dump
 typ, b, c, p, cnt = load_dump(sys.argv[1]); d = typ == b'D'
@@ -8,7 +8,9 @@ c = c[d]; p = p[d]; N = len(c); m = (c ^ p).astype(np.uint16)
 ev = np.load("../data/L4_events.npy"); e = np.zeros(N, np.uint8); e[ev] = 1
 i = np.arange(N); G = ~(((m[np.maximum(i - 2, 0)] & 1) == 0) & ((m[np.maximum(i - 3, 0)] & 1) == 1))
 S0, T, H = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]); L = T + H; sl = slice(S0, S0 + L)
-u = p[S0 - 4:S0 - 4 + L].astype(np.uint16); x = m[sl]; ee = e[sl].copy(); g = G[sl].astype(np.uint8)
+XS = __import__("os").environ.get("XSRC", "m0")              # output inputs: word (m, c, p) at depth k, e.g. m2
+xd = int(XS[1:]); x = {"m": m, "c": c, "p": p}[XS[0]][S0 - xd:S0 - xd + L].astype(np.uint16)
+u = p[S0 - 4:S0 - 4 + L].astype(np.uint16); ee = e[sl].copy(); g = G[sl].astype(np.uint8)
 if len(sys.argv) > 6 and sys.argv[6] == "planted":
     n, mask, seed = int(sys.argv[7]), int(sys.argv[8], 0), int(sys.argv[9])
     mb = [k for k in range(16) if mask >> k & 1]; nm = len(mb); rg = np.random.default_rng(seed)

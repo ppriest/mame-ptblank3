@@ -218,3 +218,6 @@ pinned is SAT and predicts the next 20000 words exactly; real data with the same
   Real data, n = 4 (2^30 candidates, covers n <= 4): none fits; deepest reject at 123 of 448 gated words (64 unknowns).
 - Real data, n = 5 (2^35 candidates, covers n <= 5): none fits; deepest reject at 142 of 448 gated words (80 unknowns).
   1 h 56 min on 20 processes (log timestamps).
+- Same n = 4 search with the output over other words (brute_prep.py XSRC): m[i-2], m[i-3], c[i] none fit, deepest
+  reject 124, 121, 124 of 448. p[i-4]: none fit, deepest 9; a zero p[i-4] forces output 0, and gated words with
+  e = 1 and p[i-4] = 0 are common, so this variant is excluded almost at once.
