@@ -211,3 +211,8 @@ pinned is SAT and predicts the next 20000 words exactly; real data with the same
   a,c / b,c / l,d,f / l,d,f,b / l,d,f,b,c unknown; W columns 0..11 pinned SAT in 0 s, 0..7 or fewer unknown.
   The hardness is the product of unknown state and unknown output masks: once either is fixed the rest is linear.
   Splitting the search by pinning W needs about 48 bits at n = 4, too many to enumerate.
+- Exhaustive search with a, c restricted to plaintext bits 0xc980 (scripts/brute_prep.py, brute.c): every
+  (a, c, l, d, f, b, init) is simulated and W solved by online GF(2) elimination over the 448 gated words of
+  288896..289496; survivors are tested on the next 20000 words. Planted check (n = 4): the planted candidate and
+  5 equivalent forms found, each 1.0000 on 15033 held-out gated words; 2^24 candidates in 25 s on one core.
+  Real data, n = 4 (2^30 candidates, covers n <= 4): none fits; deepest reject at 123 of 448 gated words (64 unknowns).
