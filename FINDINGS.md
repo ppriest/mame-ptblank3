@@ -197,3 +197,6 @@ pinned is SAT and predicts the next 20000 words exactly; real data with the same
   register empties in n words, but events persist ~33 words into zero plaintext.
 - Self-sustaining variant (adds parity(l.R) and parity(d.R) & parity(f.R) to the new bit): unknown after 300 s at
   n = 6 on 300 words (and 300 words underdetermine its ~254 unknowns).
+- Same, output over m[i] only (NX=16, ~150 unknowns at n = 6): unknown after 3600 s at n = 4 and n = 6 on 600
+  words from 288896. Pinned planted instance at n = 6 is SAT and predicts the next 20000 words at 1.0000 (base
+  0.5123), so the encoding is sound; z3 cannot decide this template at this size.
