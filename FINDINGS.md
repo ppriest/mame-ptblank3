@@ -200,3 +200,7 @@ pinned is SAT and predicts the next 20000 words exactly; real data with the same
 - Same, output over m[i] only (NX=16, ~150 unknowns at n = 6): unknown after 3600 s at n = 4 and n = 6 on 600
   words from 288896. Pinned planted instance at n = 6 is SAT and predicts the next 20000 words at 1.0000 (base
   0.5123), so the encoding is sound; z3 cannot decide this template at this size.
+- Incremental z3 (scripts/z3cegar.py): transitions asserted over all 600 words, output constraints added from the
+  candidate's wrong words, 8 per iteration. On planted instances (n = 4 and 6, 4 seeds each, 900 s) every run stalled
+  at 72-80 of 448 constraints after 5-6 iterations with z3 unknown. The limit is the depth of the unrolled nonlinear
+  register, not the constraint count: this template is beyond z3 at these sizes even when a solution exists.
