@@ -155,3 +155,24 @@ chosen-input experiments on a real board (reflashed NAND) or the original resear
   recurrence from earlier state, so "mask dependence" is dependence on the state at earlier times.
 - Shift-register-of-latched-products family: h = XOR of p[d].b & m[d+off].k (same word or +-2 words, depths 4..20)
   (scripts/samedepth.py): fails, 0.54-0.55 held-out on enabled rows (base 0.79).
+
+## Round 4: algebraic annihilators (scripts/annih.py)
+Exact GF(2) rank test on enabled, gate-open rows: does a polynomial of degree <= d vanish on every event row
+(or every non-event row) without vanishing on all rows? Any hit is verified on all 186,810 event rows.
+Positive control (gate-closed rows included, scripts/annih_ctrl.py): recovers m3.0 + m2.0*m3.0, the gate, exactly.
+No annihilator of events or of non-events for:
+| variables                                   | degree | monomials | data rank |
+|---------------------------------------------|--------|-----------|-----------|
+| m words 0..5 + t lags 1..4                  | 1, 2   | 5051      | 3321      |
+| c, p words 0..11                            | 1      | 385       | 228       |
+| c, p words 0..3                             | 2      | 8257      | 4186      |
+| c, p words 0..7                             | 2      | 32897     | 12720     |
+| m words 4..11                               | 2      | 8257      | 5152      |
+| m 0..1 + p bits 11/14/15 depths 3..10 + t 1..6 | 2   | 1954      | 1771      |
+| m words 0..2 + t 1..4                       | 3      | 23479     | 15226     |
+| m 0..1 + p bits 11/14/15 depths 3..8 + t 1..4 | 3    | 26290     | 22152     |
+| m 2..3 + p bits 11/14/15 depths 3..8 + t 1..6 | 3    | 29317     | 24806     |
+Consequences: h is not an OR of products of linear forms over these bits, not a choice among 2 or 3 linear
+forms selected by state expressible in these bits, and has algebraic immunity > 3 over them.
+- Comparators (A > B on full or low 4/8/11/12 bits), carries and borrows of every pair of c, p, m words 0..8,
+  on enabled rows only (scripts/arith2.py): best |corr| 0.093, below raw p[i-4].11 (0.125).
