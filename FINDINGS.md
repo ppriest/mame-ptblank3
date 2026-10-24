@@ -176,3 +176,24 @@ Consequences: h is not an OR of products of linear forms over these bits, not a 
 forms selected by state expressible in these bits, and has algebraic immunity > 3 over them.
 - Comparators (A > B on full or low 4/8/11/12 bits), carries and borrows of every pair of c, p, m words 0..8,
   on enabled rows only (scripts/arith2.py): best |corr| 0.093, below raw p[i-4].11 (0.125).
+
+## Round 5: register templates
+Start of stream (scripts/head.py): the residual is 1 at words 0, 1, 2, 4 with no history, the first plaintext
+words (0x5cbc, 0x0800) carry enabling bits at depth 0 and 1, and the gate is never violated in the first 400 words.
+The depth-4 rule is therefore a steady-state property; the hidden state is non-empty or behaves differently at
+activation.
+
+Plaintext-only register rules, output solved exactly as XOR_k R[k] & L_k(c, p of 2 words) (scripts/rtempl.py),
+held-out on the last 30%, enabled-row baseline 0.798:
+- OR-enable shift register (masks 0xc980, 0x0800, 0x4800, 0xc800; depths 4..19): best 0.66
+- words-since-enable (binary or one-hot): best 0.66; saturating charge counters: best 0.63
+FIFO of words latched at enabling plaintext (scripts/fifo.py), linear in FIFO contents, with or without an
+activity one-hot gate, latching m, c or p, depth 1..8: best 0.64.
+
+z3 (scripts/z3nlfsr.py, z3nlfsr2.py). Encoding verified each time: planted random instance with parameters
+pinned is SAT and predicts the next 20000 words exactly; real data with the same pin is UNSAT.
+- NLFSR, new bit = parity(a.p[i-4]) ^ (parity(b.R) & parity(c.p[i-4])), output XOR_k R[k] & parity(W_k . m[i], m[i-1]):
+  UNSAT on 300 real words for n = 4, 6, 8, 12, 16 (unknown at 24, 32 after 900 s). Cause: with zero plaintext the
+  register empties in n words, but events persist ~33 words into zero plaintext.
+- Self-sustaining variant (adds parity(l.R) and parity(d.R) & parity(f.R) to the new bit): unknown after 300 s at
+  n = 6 on 300 words (and 300 words underdetermine its ~254 unknowns).
