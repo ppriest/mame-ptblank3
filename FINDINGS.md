@@ -67,8 +67,11 @@ runend.py/impulse2.py/trans.py timing; holdsearch.c/holdlin.py/strided.py hidden
 - PR #11236/#11244 (the table's origin) only states the nonlinear calculation "is still proving illusive".
 
 ## Status
-Not solved. Linear part and the OR gate on (m[i-2].0, m[i-3].0) are exact; the gated hidden bit h
-(rate 0.16 on gate-open rows) has resisted every closed-form and small-state model tried.
+Stopped; not solved. The table stays in MAME. Linear part and the OR gate on (m[i-2].0, m[i-3].0) are exact; the
+gated hidden bit h (rate 0.16 on gate-open rows) fits no closed-form or small-state model tried (Rounds 1-5).
+The only stream is the one activation (gunbalina's is identical), and learned models reach 0.86-0.87 on gate-open
+rows against a 0.80 base. The likely way forward is chosen-ciphertext data from a real MEM(N) decrypter, which
+can reset and probe the hidden state; more template searches on this stream are unlikely to settle it.
 MAME tree restored (patch saved here); E:/mame/namcos10.exe is the instrumented build (hook inert without NS10_DUMP).
 
 ## Layout of this folder
